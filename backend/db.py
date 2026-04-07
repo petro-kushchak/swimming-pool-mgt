@@ -3,6 +3,7 @@ import json
 from typing import Optional, List
 
 from config import config
+from schema import PoolsConfigSchema
 
 
 class Database:
@@ -27,8 +28,9 @@ class Database:
         if os.path.exists(config.pools_config):
             with open(config.pools_config, "r") as f:
                 data = json.load(f)
-                self._pools = data.get("pools", [])
-                self._api_key = data.get("api_key", "")
+                validated = PoolsConfigSchema(**data)
+                self._pools = [pool.model_dump() for pool in validated.pools]
+                self._api_key = validated.api_key or ""
         if self._pools:
             self._next_id = max(p["id"] for p in self._pools) + 1
 
