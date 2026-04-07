@@ -1,15 +1,16 @@
-import os
 import asyncio
 import re
 from datetime import datetime
 from typing import Optional
+
+from config import config
 from pool_status import get_pool_status_by_id, get_all_pool_statuses, PoolStatus
 
-SCHEDULER_INTERVAL = int(os.getenv("SCHEDULER_INTERVAL", "60"))
 
 def parse_time(time_str: str) -> tuple[int, int]:
     parts = time_str.split(":")
     return int(parts[0]), int(parts[1])
+
 
 def parse_duration(duration_str: str) -> int:
     total_minutes = 0
@@ -21,9 +22,10 @@ def parse_duration(duration_str: str) -> int:
         total_minutes += int(minutes_match.group(1))
     return total_minutes if total_minutes > 0 else 60
 
+
 class Scheduler:
     def __init__(self, interval: int = None):
-        self.interval = interval or SCHEDULER_INTERVAL
+        self.interval = interval or config.scheduler_interval
         self._running = False
         self._task: Optional[asyncio.Task] = None
 
@@ -74,5 +76,6 @@ class Scheduler:
             elif not should_filter and status.manual_override == "running":
                 await status.stop_filtering("scheduler")
                 await self._notify(pool_id, status)
+
 
 scheduler = Scheduler()

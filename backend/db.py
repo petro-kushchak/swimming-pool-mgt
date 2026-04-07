@@ -2,44 +2,78 @@ import os
 import json
 from typing import Optional, List
 
-POOLS_FILE = os.getenv("POOLS_CONFIG", "/data/pools.json")
+from config import config
 
-_pools: List[dict] = []
-_api_key: str = ""
-_next_id: int = 1
+
+class Database:
+    _instance: Optional['Database'] = None
+
+    def __init__(self):
+        self._pools: List[dict] = []
+        self._api_key: str = ""
+        self._next_id: int = 1
+
+    @classmethod
+    def get_instance(cls) -> 'Database':
+        if cls._instance is None:
+            cls._instance = cls()
+        return cls._instance
+
+    @classmethod
+    def reset(cls):
+        cls._instance = None
+
+    def load(self):
+        if os.path.exists(config.pools_config):
+            with open(config.pools_config, "r") as f:
+                data = json.load(f)
+                self._pools = data.get("pools", [])
+                self._api_key = data.get("api_key", "")
+        if self._pools:
+            self._next_id = max(p["id"] for p in self._pools) + 1
+
+    @property
+    def api_key(self) -> str:
+        return self._api_key
+
+    @property
+    def pools(self) -> List[dict]:
+        return self._pools
+
+    def get_pool_by_id(self, pool_id: int) -> Optional[dict]:
+        for pool in self._pools:
+            if pool["id"] == pool_id:
+                return pool
+        return None
+
+    def add_pool(self, name: str, description: Optional[str], location: str, capacity: int, schedule: Optional[list]) -> dict:
+        pool = {
+            "id": self._next_id,
+            "name": name,
+            "description": description,
+            "location": location,
+            "capacity": capacity,
+            "schedule": schedule
+        }
+        self._pools.append(pool)
+        self._next_id += 1
+        return pool
+
+
+_db = Database.get_instance()
+
 
 def init_pools():
-    global _pools, _api_key, _next_id
-    if os.path.exists(POOLS_FILE):
-        with open(POOLS_FILE, "r") as f:
-            data = json.load(f)
-            _pools = data.get("pools", [])
-            _api_key = data.get("api_key", "")
-    if _pools:
-        _next_id = max(p["id"] for p in _pools) + 1
+    _db.load()
+
 
 def get_api_key() -> str:
-    return _api_key
+    return _db.api_key
+
 
 def get_all_pools() -> List[dict]:
-    return _pools
+    return _db.pools
+
 
 def get_pool_by_id(pool_id: int) -> Optional[dict]:
-    for pool in _pools:
-        if pool["id"] == pool_id:
-            return pool
-    return None
-
-def create_pool(name: str, description: Optional[str], location: str, capacity: int, schedule: Optional[list]) -> dict:
-    global _next_id
-    pool = {
-        "id": _next_id,
-        "name": name,
-        "description": description,
-        "location": location,
-        "capacity": capacity,
-        "schedule": schedule
-    }
-    _pools.append(pool)
-    _next_id += 1
-    return pool
+    return _db.get_pool_by_id(pool_id)

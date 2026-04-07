@@ -2,7 +2,7 @@ from fastapi import FastAPI, APIRouter, WebSocket, WebSocketDisconnect, HTTPExce
 from pydantic import BaseModel
 from typing import Optional, List
 
-from db import get_all_pools, get_pool_by_id, create_pool, get_api_key
+from db import get_all_pools, get_pool_by_id, get_api_key
 from pool_status import get_pool_status_by_id, get_all_pool_statuses, PoolStatus
 from version import get_version
 
@@ -98,14 +98,6 @@ async def list_pools(request: Request):
     verify_api_key(request.headers.get("X-API-Key"))
     return get_all_pools()
 
-@api_router.post("/pools")
-async def add_pool(pool: Pool, request: Request):
-    verify_api_key(request.headers.get("X-API-Key"))
-    new_pool = create_pool(
-        pool.name, pool.description, pool.location, pool.capacity, pool.schedule
-    )
-    return {"message": "Pool added successfully", "pool": new_pool}
-
 @api_router.get("/pools/{pool_id}")
 async def get_pool(pool_id: int, request: Request):
     verify_api_key(request.headers.get("X-API-Key"))
@@ -126,7 +118,7 @@ async def get_pool_status_endpoint(pool_id: int, request: Request):
         **status.get_status()
     }
 
-@api_router.post("/pools/{pool_id}/start")
+@api_router.put("/pools/{pool_id}/start")
 async def start_pool_filtering(pool_id: int, request: Request, by: str = "manual"):
     verify_api_key(request.headers.get("X-API-Key"))
     status = get_pool_status_by_id(pool_id)
@@ -143,7 +135,7 @@ async def start_pool_filtering(pool_id: int, request: Request, by: str = "manual
     await manager.broadcast(response)
     return response
 
-@api_router.post("/pools/{pool_id}/stop")
+@api_router.put("/pools/{pool_id}/stop")
 async def stop_pool_filtering(pool_id: int, request: Request, by: str = "manual"):
     verify_api_key(request.headers.get("X-API-Key"))
     status = get_pool_status_by_id(pool_id)
@@ -160,7 +152,7 @@ async def stop_pool_filtering(pool_id: int, request: Request, by: str = "manual"
     await manager.broadcast(response)
     return response
 
-@api_router.post("/pools/{pool_id}/resume")
+@api_router.put("/pools/{pool_id}/resume")
 async def resume_pool_filtering(pool_id: int, request: Request):
     verify_api_key(request.headers.get("X-API-Key"))
     status = get_pool_status_by_id(pool_id)

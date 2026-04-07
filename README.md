@@ -74,28 +74,50 @@ graph TB
 └── backend/
     ├── main.py           # Entry point
     ├── api.py            # FastAPI routes, WebSocket handlers
-    ├── db.py             # Configuration loader
+    ├── config.py         # Configuration parameters
+    ├── db.py             # Database/pools loader
     ├── version.py        # Version management
     ├── status.py         # Schedule parsing, status calculation
     ├── pool_status.py    # Per-pool status, device control
     ├── device.py         # HTTP device client
-    └── scheduler.py      # Automated filtering scheduler
+    ├── scheduler.py      # Automated filtering scheduler
+    └── tests/
+        ├── test_device.py
+        ├── test_pool_status.py
+        ├── test_scheduler.py
+        └── test_status.py
+```
+
+## Testing
+
+Tests run automatically during build. To run tests separately:
+
+```bash
+# Build test image
+docker build -f backend/Dockerfile.test -t pool-mgt:test .
+
+# Run tests
+docker run --rm pool-mgt:test
 ```
 
 ## Build, Publish & Run
 
 ### Build
 
+Build runs tests automatically before building the image. Use `--skip-tests` to skip.
+
 ```bash
-# Build specific version
+# Build (runs tests first)
 ./cicd/build.sh -v 0.2.0
+
+# Build skipping tests
+./cicd/build.sh -v 0.2.0 --skip-tests
 
 # Build with additional tag
 ./cicd/build.sh -v 0.2.0 -t beta
 
 # Build using VERSION file
 ./cicd/build.sh
-```
 
 ### Publish
 
@@ -228,10 +250,11 @@ graph TB
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `BUILD_VERSION` | - | Service version (set at build time) |
+| `BUILD_VERSION` | `unknown` | Service version (set at build time) |
 | `POOLS_CONFIG` | `/data/pools.json` | Path to pools configuration |
 | `SCHEDULER_INTERVAL` | `60` | Scheduler check interval in seconds |
-| `API_PORT` | `8000` | Exposed API port |
+| `API_PORT` | `8000` | API server port |
+| `VERSION_FILE` | `/app/VERSION` | Path to version file |
 
 ## API Endpoints
 
@@ -291,17 +314,17 @@ Response:
 
 #### Start filtering manually
 ```http
-POST /api/v1/pools/{pool_id}/start?by=user_id
+PUT /api/v1/pools/{pool_id}/start?by=user_id
 ```
 
 #### Stop filtering manually
 ```http
-POST /api/v1/pools/{pool_id}/stop?by=user_id
+PUT /api/v1/pools/{pool_id}/stop?by=user_id
 ```
 
 #### Resume scheduled filtering
 ```http
-POST /api/v1/pools/{pool_id}/resume
+PUT /api/v1/pools/{pool_id}/resume
 ```
 
 ### WebSocket API
