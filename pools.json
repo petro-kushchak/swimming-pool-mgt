@@ -1,0 +1,38 @@
+{
+  "api_key": "your-secret-api-key-here",
+  "pools": [
+    {
+      "id": 1,
+      "name": "Olympic Pool",
+      "description": "Main competition pool",
+      "location": "Building A, 1st Floor",
+      "capacity": 50,
+      "schedule": [
+        {"startAt": "06:00", "duration": "3h"},
+        {"startAt": "12:00", "duration": "2h"},
+        {"startAt": "18:00", "duration": "4h 30m"}
+      ]
+    },
+    {
+      "id": 2,
+      "name": "Kids Pool",
+      "description": "Shallow pool for children",
+      "location": "Building A, Ground Floor",
+      "capacity": 20,
+      "schedule": [
+        {"startAt": "09:00", "duration": "3h"},
+        {"startAt": "14:00", "duration": "4h"}
+      ]
+    },
+    {
+      "id": 3,
+      "name": "Jacuzzi",
+      "description": "Relaxation spa",
+      "location": "Building B, Spa Area",
+      "capacity": 8,
+      "schedule": [
+        {"startAt": "08:00", "duration": "13h"}
+      ]
+    }
+  ]
+}
