@@ -20,7 +20,7 @@ Self-hosted service for swimming pool management
 
 Build and run with Docker:
 ```bash
-docker build -t swimming-pool-mgt .
+docker build -t swimming-pool-mgt -f docker/Dockerfile .
 docker run -p 8000:8000 swimming-pool-mgt
 ```
 
