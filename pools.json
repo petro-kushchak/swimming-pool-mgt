@@ -11,7 +11,13 @@
         {"startAt": "06:00", "duration": "3h"},
         {"startAt": "12:00", "duration": "2h"},
         {"startAt": "18:00", "duration": "4h 30m"}
-      ]
+      ],
+      "device": {
+        "name": "Olympic Pool Filter Pump",
+        "start_url": "http://192.168.1.100/pump/on",
+        "stop_url": "http://192.168.1.100/pump/off",
+        "status_url": "http://192.168.1.100/pump/status"
+      }
     },
     {
       "id": 2,
@@ -22,7 +28,12 @@
       "schedule": [
         {"startAt": "09:00", "duration": "3h"},
         {"startAt": "14:00", "duration": "4h"}
-      ]
+      ],
+      "device": {
+        "name": "Kids Pool Filter Pump",
+        "start_url": "http://192.168.1.101/pump/on",
+        "stop_url": "http://192.168.1.101/pump/off"
+      }
     },
     {
       "id": 3,

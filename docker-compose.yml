@@ -1,0 +1,17 @@
+services:
+  pool-mgt:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+      args:
+        - BUILD_VERSION=${BUILD_VERSION:-unknown}
+    image: ${IMAGE_NAME:-swimming-pool-mgt}:${BUILD_VERSION:-unknown}
+    container_name: ${CONTAINER_NAME:-pool-mgt}
+    ports:
+      - "${API_PORT:-8082}:8000"
+    volumes:
+      - ${POOLS_CONFIG:-./pools.json}:/data/pools.json:ro
+    environment:
+      - BUILD_VERSION=${BUILD_VERSION:-unknown}
+      - SCHEDULER_INTERVAL=${SCHEDULER_INTERVAL:-60}
+    restart: unless-stopped

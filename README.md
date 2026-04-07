@@ -1,6 +1,16 @@
 # Swimming Pool Management Service
 
-Self-hosted service for managing swimming pool filtering schedules with real-time status updates.
+Self-hosted service for managing swimming pool filtering schedules with real-time status updates and device control.
+
+## Quick Start
+
+```bash
+# Build and run
+./cicd/run.sh -b
+
+# Or run with existing image
+./cicd/run.sh
+```
 
 ## Architecture
 
@@ -19,46 +29,121 @@ graph TB
     end
 
     subgraph Business["Business Logic"]
-        Status[Pool Status Calculator]
-        Schedule[Schedule Parser]
+        Status[Status Calculator]
+        Scheduler[Scheduler]
+    end
+
+    subgraph Device["Device Control"]
+        Device1[Filtering Device 1]
+        Device2[Filtering Device 2]
+        DeviceN[... Device N]
     end
 
     subgraph Data["Data Layer"]
         Config[(pools.json)]
-        Memory[In-Memory Store]
+        Version[(VERSION)]
     end
 
     UI -->|HTTP| REST
     Mobile -->|HTTP| REST
     IoT -->|WebSocket| WS
     UI -->|WebSocket| WS
-    Mobile -->|WebSocket| WS
 
     REST --> Auth
     WS --> Auth
     Auth --> Config
 
-    REST --> Status
-    WS --> Status
-    Status --> Schedule
-    Status --> Memory
-    Memory --> Config
+    Scheduler --> Status
+    Status --> Device
+    Device --> Device1
+    Device --> Device2
 ```
 
-## Modules
+## Project Structure
 
 ```
-backend/
-├── main.py        # Entry point
-├── api.py         # FastAPI routes, WebSocket handlers
-├── db.py          # Configuration loader, in-memory storage
-├── status.py      # Schedule parsing, filtering status calculation
-└── pool_status.py # Per-pool status with manual override support
+.
+├── VERSION              # Version file
+├── pools.json           # Pool configuration
+├── docker-compose.yml    # Docker compose configuration
+├── Dockerfile           # Docker build file
+├── cicd/
+│   ├── build.sh         # Build Docker image
+│   ├── publish.sh       # Publish to registry
+│   └── run.sh           # Run service
+└── backend/
+    ├── main.py           # Entry point
+    ├── api.py            # FastAPI routes, WebSocket handlers
+    ├── db.py             # Configuration loader
+    ├── version.py        # Version management
+    ├── status.py         # Schedule parsing, status calculation
+    ├── pool_status.py    # Per-pool status, device control
+    ├── device.py         # HTTP device client
+    └── scheduler.py      # Automated filtering scheduler
+```
+
+## Build, Publish & Run
+
+### Build
+
+```bash
+# Build specific version
+./cicd/build.sh -v 0.2.0
+
+# Build with additional tag
+./cicd/build.sh -v 0.2.0 -t beta
+
+# Build using VERSION file
+./cicd/build.sh
+```
+
+### Publish
+
+```bash
+# Publish to Docker Hub
+./cicd/publish.sh -v 0.2.0
+
+# Publish with latest tag
+./cicd/publish.sh -v 0.2.0 -l
+
+# Publish to custom registry
+./cicd/publish.sh -v 0.2.0 -r ghcr.io/username
+
+# Publish dev tag
+./cicd/publish.sh -v 0.2.0 -d
+```
+
+### Run
+
+```bash
+# Build and run
+./cicd/run.sh -b -v 0.2.0
+
+# Run with existing image (reads VERSION file)
+./cicd/run.sh
+
+# Run with custom port
+./cicd/run.sh -p 8080
+
+# Run with custom pools config
+./cicd/run.sh -d /path/to/pools.json
+
+# Run with custom scheduler interval
+./cicd/run.sh -i 30
+
+# View logs
+./cicd/run.sh --logs
+
+# Stop service
+./cicd/run.sh --stop
+
+# Rebuild and restart
+./cicd/run.sh -b -r
 ```
 
 ## Configuration
 
-Create `pools.json` with pools configuration:
+### pools.json
 
 ```json
 {
@@ -74,17 +159,23 @@ Create `pools.json` with pools configuration:
         {"startAt": "06:00", "duration": "3h"},
         {"startAt": "12:00", "duration": "2h"},
         {"startAt": "18:00", "duration": "4h 30m"}
-      ]
+      ],
+      "device": {
+        "name": "Olympic Pool Filter Pump",
+        "start_url": "http://192.168.1.100/pump/on",
+        "stop_url": "http://192.168.1.100/pump/off",
+        "status_url": "http://192.168.1.100/pump/status"
+      }
     }
   ]
 }
 ```
 
-### Configuration Options
+### Configuration Fields
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| `api_key` | string | No | API key for authentication. Leave empty to disable. |
+| `api_key` | string | No | API key for authentication. Empty to disable. |
 | `pools` | array | Yes | List of pool configurations |
 | `pools[].id` | integer | Yes | Unique pool identifier |
 | `pools[].name` | string | Yes | Pool name |
@@ -94,39 +185,95 @@ Create `pools.json` with pools configuration:
 | `pools[].schedule` | array | No | Filtering schedule entries |
 | `schedule[].startAt` | string | Yes | Start time (HH:MM format) |
 | `schedule[].duration` | string | Yes | Duration (e.g., "3h", "2h 30m", "45m") |
+| `pools[].device` | object | No | Filtering device configuration |
+| `device.name` | string | Yes | Device name |
+| `device.start_url` | string | Yes | HTTP URL to start device |
+| `device.stop_url` | string | Yes | HTTP URL to stop device |
+| `device.status_url` | string | No | HTTP URL to check device status |
+
+### Filtering Device Examples
+
+#### Simple HTTP Device (Sonoff, Tasmota)
+
+```json
+"device": {
+  "name": "Pool Pump",
+  "start_url": "http://192.168.1.100/cm?cmnd=Power%20On",
+  "stop_url": "http://192.168.1.100/cm?cmnd=Power%20Off"
+}
+```
+
+#### Home Assistant REST Command
+
+```json
+"device": {
+  "name": "Pool Pump via HA",
+  "start_url": "http://homeassistant:8123/api/services/switch/turn_on",
+  "stop_url": "http://homeassistant:8123/api/services/switch/turn_off",
+  "status_url": "http://homeassistant:8123/api/states/switch.pool_pump"
+}
+```
+
+#### OpenHab HTTP Binding
+
+```json
+"device": {
+  "name": "Pool Pump via OpenHAB",
+  "start_url": "http://openhab:8080/rest/items/PoolPump_Switch",
+  "stop_url": "http://openhab:8080/rest/items/PoolPump_Switch"
+}
+```
+
+## Environment Variables
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `BUILD_VERSION` | - | Service version (set at build time) |
+| `POOLS_CONFIG` | `/data/pools.json` | Path to pools configuration |
+| `SCHEDULER_INTERVAL` | `60` | Scheduler check interval in seconds |
+| `API_PORT` | `8000` | Exposed API port |
 
 ## API Endpoints
+
+API version: `/api/v1`
+
+### Service Info
+
+#### Get service info
+```http
+GET /
+```
+Response:
+```json
+{"service":"Swimming Pool Management Service","version":"0.2.0","docs":"/docs"}
+```
+
+#### Get version
+```http
+GET /api/v1/version
+```
+Response:
+```json
+{"version": "0.2.0"}
+```
 
 ### REST API
 
 All REST endpoints require `X-API-Key` header if authentication is enabled.
 
-#### Get all pools
+#### List all pools
 ```http
-GET /pools
-```
-Response:
-```json
-[
-  {
-    "id": 1,
-    "name": "Olympic Pool",
-    "description": "Main competition pool",
-    "location": "Building A, 1st Floor",
-    "capacity": 50,
-    "schedule": [...]
-  }
-]
+GET /api/v1/pools
 ```
 
 #### Get pool by ID
 ```http
-GET /pools/{pool_id}
+GET /api/v1/pools/{pool_id}
 ```
 
 #### Get pool status
 ```http
-GET /pools/{pool_id}/status
+GET /api/v1/pools/{pool_id}/status
 ```
 Response:
 ```json
@@ -134,114 +281,50 @@ Response:
   "pool_id": 1,
   "name": "Olympic Pool",
   "filtering": true,
+  "manual_override": false,
+  "device_controlled": true,
+  "device_running": true,
   "ends_at": "09:00",
-  "remaining_minutes": 120,
-  "next_filter": null,
-  "last_filtered": null
+  "remaining_minutes": 120
 }
 ```
 
 #### Start filtering manually
 ```http
-POST /pools/{pool_id}/start?by=user_id
+POST /api/v1/pools/{pool_id}/start?by=user_id
 ```
 
 #### Stop filtering manually
 ```http
-POST /pools/{pool_id}/stop?by=user_id
+POST /api/v1/pools/{pool_id}/stop?by=user_id
 ```
 
 #### Resume scheduled filtering
 ```http
-POST /pools/{pool_id}/resume
+POST /api/v1/pools/{pool_id}/resume
 ```
 
 ### WebSocket API
 
-Connect with API key via query parameter:
 ```javascript
-const ws = new WebSocket('ws://localhost:8000/ws/status?api_key=your-key');
+// All pools status
+const ws = new WebSocket('ws://localhost:8000/api/v1/ws/status?api_key=your-key');
+
+// Single pool status
+const ws = new WebSocket('ws://localhost:8000/api/v1/ws/status/1?api_key=your-key');
 ```
 
-#### All pools status (`/ws/status`)
-Receives status updates for all pools every 30 seconds.
-
-```javascript
-ws.onmessage = (event) => {
-  const status = JSON.parse(event.data);
-  // {"pool_id":1,"name":"Olympic Pool","filtering":false,...}
-};
-```
-
-#### Single pool status (`/ws/status/{pool_id}`)
-Receives status updates for a specific pool every 30 seconds.
-
-```javascript
-const ws = new WebSocket('ws://localhost:8000/ws/status/1?api_key=your-key');
-```
-
-## Status Response Fields
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `filtering` | boolean | Whether the pool is currently filtering |
-| `manual_override` | boolean | Whether manual control is active |
-| `ends_at` | string | When current filtering ends (HH:MM) |
-| `remaining_minutes` | integer | Minutes until filtering ends |
-| `next_filter` | string | When next scheduled filtering starts (HH:MM) |
-| `last_filtered` | string | When last filtering ended (HH:MM) |
-| `started_at` | string | When manual start was triggered (ISO timestamp) |
-| `started_by` | string | Who triggered manual start |
-| `stopped_at` | string | When manual stop was triggered (ISO timestamp) |
-| `stopped_by` | string | Who triggered manual stop |
-
-## Build
-
-### Local Development
+## Authentication
 
 ```bash
-cd backend
-pip install -r requirements.txt
-python -m uvicorn main:app --reload
+# REST API
+curl -H "X-API-Key: your-secret-api-key" http://localhost:8000/api/v1/pools
+
+# WebSocket
+const ws = new WebSocket('ws://localhost:8000/api/v1/ws/status?api_key=your-secret-api-key');
 ```
 
-### Docker
-
-```bash
-docker build -t swimming-pool-mgt -f docker/Dockerfile .
-```
-
-## Deploy
-
-### Docker Run
-
-```bash
-docker run -d \
-  --name pool-mgt \
-  -p 8000:8000 \
-  -v /path/to/pools.json:/data/pools.json \
-  swimming-pool-mgt
-```
-
-### Docker Compose
-
-```yaml
-version: '3.8'
-services:
-  pool-mgt:
-    build: .
-    ports:
-      - "8000:8000"
-    volumes:
-      - ./pools.json:/data/pools.json
-    restart: unless-stopped
-```
-
-### Environment Variables
-
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `POOLS_CONFIG` | `/data/pools.json` | Path to pools configuration file |
+Without valid key: REST returns `401`, WebSocket closes with code `4001`.
 
 ## API Documentation
 
