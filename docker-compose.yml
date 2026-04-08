@@ -38,7 +38,7 @@ services:
     environment:
       - API_URL=${UI_API_URL:-http://localhost:8082}
       - WS_URL=${UI_WS_URL:-ws://localhost:8082}
-      - API_KEY=${API_KEY:-}
+      - API_KEY=${API_KEY}
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/health"]

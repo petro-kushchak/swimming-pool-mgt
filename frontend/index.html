@@ -5,126 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="Swimming Pool Management Service - Monitor and control your pool filtering">
   <title>Pool Management</title>
-  
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,1,0" rel="stylesheet">
-  
-  <link rel="stylesheet" href="styles.css?v=1">
+  <link rel="stylesheet" href="./src/styles.css">
 </head>
 <body>
-  <header class="app-bar">
-    <div class="app-bar-content">
-      <div class="app-bar-title">
-        <span class="material-symbols-rounded app-bar-icon">pool</span>
-        <h1>Pool Management</h1>
-      </div>
-      <div class="connection-status" id="connectionStatus">
-        <span class="material-symbols-rounded status-icon">wifi_off</span>
-        <span class="status-text">Connecting...</span>
-      </div>
-    </div>
-  </header>
-
-  <main class="main-content">
-    <section class="pools-grid" id="poolsGrid">
-      <div class="loading-state" id="loadingState">
-        <div class="loading-spinner"></div>
-        <p>Loading pools...</p>
-      </div>
-    </section>
-  </main>
-
-  <div class="fab" id="fab">
-    <button class="fab-button" id="fabRefresh" title="Refresh">
-      <span class="material-symbols-rounded">refresh</span>
-    </button>
-  </div>
-
-  <div class="toast-container" id="toastContainer"></div>
-
-  <template id="poolCardTemplate">
-    <article class="pool-card">
-      <header class="pool-card-header">
-        <div class="pool-info">
-          <h2 class="pool-name"></h2>
-          <p class="pool-location"></p>
-        </div>
-        <div class="pool-status-chip">
-          <span class="material-symbols-rounded chip-icon"></span>
-          <span class="chip-text"></span>
-        </div>
-      </header>
-      
-      <div class="pool-card-body">
-        <div class="status-section">
-          <div class="status-indicator">
-            <div class="status-ring">
-              <svg viewBox="0 0 36 36">
-                <path class="ring-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
-                <path class="ring-progress" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
-              </svg>
-              <div class="ring-icon">
-                <span class="material-symbols-rounded"></span>
-              </div>
-            </div>
-            <div class="status-details">
-              <span class="status-label"></span>
-              <span class="status-time"></span>
-              <span class="status-remaining"></span>
-            </div>
-          </div>
-        </div>
-        
-        <div class="schedule-section" id="scheduleSection">
-          <h3 class="section-title">
-            <span class="material-symbols-rounded">schedule</span>
-            Schedule
-          </h3>
-          <ul class="schedule-list"></ul>
-        </div>
-        
-        <div class="device-section" id="deviceSection">
-          <h3 class="section-title">
-            <span class="material-symbols-rounded">settings_input_hdmi</span>
-            Device
-          </h3>
-          <div class="device-info">
-            <span class="device-name"></span>
-            <span class="device-status"></span>
-          </div>
-        </div>
-      </div>
-      
-      <footer class="pool-card-footer">
-        <button class="action-button action-stop" disabled>
-          <span class="material-symbols-rounded">stop</span>
-          Stop
-        </button>
-        <button class="action-button action-start" disabled>
-          <span class="material-symbols-rounded">play_arrow</span>
-          Start
-        </button>
-        <button class="action-button action-resume" disabled>
-          <span class="material-symbols-rounded">replay</span>
-          Resume
-        </button>
-      </footer>
-    </article>
-  </template>
-
-  <dialog class="confirm-dialog" id="confirmDialog">
-    <div class="dialog-content">
-      <h3 class="dialog-title"></h3>
-      <p class="dialog-message"></p>
-      <div class="dialog-actions">
-        <button class="dialog-button dialog-cancel">Cancel</button>
-        <button class="dialog-button dialog-confirm">Confirm</button>
-      </div>
-    </div>
-  </dialog>
-
-  <script src="app.js?v=1" type="module"></script>
+  <div id="root"></div>
+  <script type="module" src="./src/main.jsx"></script>
 </body>
 </html>

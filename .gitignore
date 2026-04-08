@@ -34,3 +34,6 @@ venv.bak/
 
 # API key (generated at runtime)
 .api_key
+
+frontend/dist/
+frontend/node_modules/

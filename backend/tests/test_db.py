@@ -33,12 +33,13 @@ class TestDatabaseFunctions:
         
         try:
             with mock.patch("db.settings.pools_config", temp_path):
-                init_pools()
-                pools = get_all_pools()
-                
-                assert len(pools) == 2
-                assert pools[0]["name"] == "Pool A"
-                assert pools[1]["name"] == "Pool B"
+                with mock.patch("db.require_api_key", return_value="test-api-key"):
+                    init_pools()
+                    pools = get_all_pools()
+                    
+                    assert len(pools) == 2
+                    assert pools[0]["name"] == "Pool A"
+                    assert pools[1]["name"] == "Pool B"
         finally:
             os.unlink(temp_path)
 
@@ -50,10 +51,11 @@ class TestDatabaseFunctions:
         
         try:
             with mock.patch("db.settings.pools_config", temp_path):
-                init_pools()
-                pools = get_all_pools()
-                
-                assert pools == []
+                with mock.patch("db.require_api_key", return_value="test-api-key"):
+                    init_pools()
+                    pools = get_all_pools()
+                    
+                    assert pools == []
         finally:
             os.unlink(temp_path)
 
@@ -69,8 +71,9 @@ class TestDatabaseFunctions:
         
         try:
             with mock.patch("db.settings.pools_config", temp_path):
-                with pytest.raises(Exception):
-                    init_pools()
+                with mock.patch("db.require_api_key", return_value="test-api-key"):
+                    with pytest.raises(Exception):
+                        init_pools()
         finally:
             os.unlink(temp_path)
 
@@ -90,15 +93,16 @@ class TestDatabaseFunctions:
         
         try:
             with mock.patch("db.settings.pools_config", temp_path):
-                init_pools()
-                
-                pool = get_pool_by_id(1)
-                assert pool is not None
-                assert pool["name"] == "Pool 1"
-                
-                pool = get_pool_by_id(2)
-                assert pool is not None
-                assert pool["name"] == "Pool 2"
+                with mock.patch("db.require_api_key", return_value="test-api-key"):
+                    init_pools()
+                    
+                    pool = get_pool_by_id(1)
+                    assert pool is not None
+                    assert pool["name"] == "Pool 1"
+                    
+                    pool = get_pool_by_id(2)
+                    assert pool is not None
+                    assert pool["name"] == "Pool 2"
         finally:
             os.unlink(temp_path)
 
@@ -117,10 +121,11 @@ class TestDatabaseFunctions:
         
         try:
             with mock.patch("db.settings.pools_config", temp_path):
-                init_pools()
-                
-                pool = get_pool_by_id(999)
-                assert pool is None
+                with mock.patch("db.require_api_key", return_value="test-api-key"):
+                    init_pools()
+                    
+                    pool = get_pool_by_id(999)
+                    assert pool is None
         finally:
             os.unlink(temp_path)
 
@@ -148,13 +153,14 @@ class TestDatabaseFunctions:
         
         try:
             with mock.patch("db.settings.pools_config", temp_path):
-                init_pools()
-                
-                pool = get_pool_by_id(1)
-                assert pool is not None
-                assert len(pool["schedule"]) == 2
-                assert pool["schedule"][0]["startAt"] == "06:00"
-                assert pool["schedule"][1]["duration"] == "2h 30m"
+                with mock.patch("db.require_api_key", return_value="test-api-key"):
+                    init_pools()
+                    
+                    pool = get_pool_by_id(1)
+                    assert pool is not None
+                    assert len(pool["schedule"]) == 2
+                    assert pool["schedule"][0]["startAt"] == "06:00"
+                    assert pool["schedule"][1]["duration"] == "2h 30m"
         finally:
             os.unlink(temp_path)
 
@@ -184,11 +190,12 @@ class TestDatabaseFunctions:
         
         try:
             with mock.patch("db.settings.pools_config", temp_path):
-                init_pools()
-                
-                pool = get_pool_by_id(1)
-                assert pool is not None
-                assert pool["device"]["name"] == "Filter Pump"
-                assert pool["device"]["start_url"] == "http://localhost/start"
+                with mock.patch("db.require_api_key", return_value="test-api-key"):
+                    init_pools()
+                    
+                    pool = get_pool_by_id(1)
+                    assert pool is not None
+                    assert pool["device"]["name"] == "Filter Pump"
+                    assert pool["device"]["start_url"] == "http://localhost/start"
         finally:
             os.unlink(temp_path)

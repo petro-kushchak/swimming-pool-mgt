@@ -4,11 +4,13 @@ class PoolApp {
   constructor() {
     this.config = null;
     this.pools = new Map();
+    this.poolStatuses = new Map();
     this.ws = null;
     this.reconnectAttempts = 0;
     this.maxReconnectAttempts = 10;
     this.reconnectDelay = 1000;
     this.apiKey = '';
+    this.updateInterval = null;
     
     this.elements = {
       poolsGrid: document.getElementById('poolsGrid'),
@@ -23,6 +25,7 @@ class PoolApp {
   }
 
   async init() {
+    console.log('PoolApp.init called');
     const configOk = await this.loadConfig();
     if (!configOk) {
       return;
@@ -30,6 +33,160 @@ class PoolApp {
     this.bindEvents();
     await this.loadInitialData();
     this.connectWebSocket();
+    this.startUpdateInterval();
+  }
+
+  startUpdateInterval() {
+    this.updateInterval = setInterval(() => this.updatePoolTimes(), 1000);
+  }
+
+  stopUpdateInterval() {
+    if (this.updateInterval) {
+      clearInterval(this.updateInterval);
+      this.updateInterval = null;
+    }
+  }
+
+  updatePoolTimes() {
+    const now = new Date();
+    const currentMinutes = now.getHours() * 60 + now.getMinutes();
+    const currentSeconds = now.getSeconds();
+    
+    console.log('updatePoolTimes called', this.poolStatuses.size, 'pools');
+    
+    this.poolStatuses.forEach((status, poolId) => {
+      const card = this.elements.poolsGrid.querySelector(`[data-pool-id="${poolId}"]`);
+      if (!card) {
+        console.log('No card found for pool', poolId);
+        return;
+      }
+      
+      const pool = this.pools.get(poolId);
+      if (!pool) {
+        console.log('No pool found for', poolId);
+        return;
+      }
+      
+      const statusTime = card.querySelector('.status-time');
+      const statusRemaining = card.querySelector('.status-remaining');
+      const chip = card.querySelector('.pool-status-chip');
+      
+      let timeText = '';
+      let remainingText = '';
+      let isFiltering = status.filtering || status.manual_override;
+      
+      if (isFiltering && status.started_at) {
+        const startedAt = new Date(status.started_at);
+        const durationMatch = this.getCurrentDuration(pool, status);
+        const totalSeconds = durationMatch ? this.parseDurationToSeconds(durationMatch) : null;
+        
+        if (totalSeconds) {
+          const elapsedSeconds = Math.floor((now - startedAt) / 1000);
+          const remainingSeconds = Math.max(0, totalSeconds - elapsedSeconds);
+          const remainingMins = Math.floor(remainingSeconds / 60);
+          const remainingSecs = remainingSeconds % 60;
+          
+          remainingText = `${remainingMins}:${remainingSecs.toString().padStart(2, '0')} remaining`;
+          
+          const endsAt = new Date(startedAt.getTime() + totalSeconds * 1000);
+          const endHours = endsAt.getHours().toString().padStart(2, '0');
+          const endMins = endsAt.getMinutes().toString().padStart(2, '0');
+          timeText = `Ends at ${endHours}:${endMins}`;
+          
+          if (remainingSeconds <= 0) {
+            chip.classList.remove('filtering', 'manual');
+            chip.classList.add('stopped');
+            remainingText = '';
+          }
+        } else {
+          const endsAt = new Date(startedAt.getTime() + 3 * 60 * 60 * 1000);
+          const endHours = endsAt.getHours().toString().padStart(2, '0');
+          const endMins = endsAt.getMinutes().toString().padStart(2, '0');
+          timeText = `Started ${this.formatTime(startedAt)} - Ends ${endHours}:${endMins}`;
+        }
+      } else if (status.next_filter) {
+        const nextMinutes = this.parseTimeToMinutes(status.next_filter);
+        let minutesUntil = nextMinutes - currentMinutes;
+        if (minutesUntil < 0) minutesUntil += 24 * 60;
+        
+        const hoursUntil = Math.floor(minutesUntil / 60);
+        const minsUntil = minutesUntil % 60;
+        
+        if (hoursUntil > 0) {
+          timeText = `Next in ${hoursUntil}h ${minsUntil}m`;
+        } else if (minsUntil > 0) {
+          timeText = `Next in ${minsUntil}m`;
+        } else {
+          timeText = 'Starting...';
+        }
+      } else if (status.last_filtered) {
+        timeText = `Last filtered ${status.last_filtered}`;
+      }
+      
+      statusTime.textContent = timeText;
+      if (remainingText) {
+        statusRemaining.textContent = remainingText;
+        statusRemaining.style.display = 'block';
+      } else {
+        statusRemaining.style.display = 'none';
+      }
+    });
+  }
+
+  getCurrentDuration(pool, status) {
+    if (!pool.schedule || pool.schedule.length === 0) return null;
+    
+    const now = new Date();
+    const currentMinutes = now.getHours() * 60 + now.getMinutes();
+    
+    for (const entry of pool.schedule) {
+      const startMinutes = this.parseTimeToMinutes(entry.startAt);
+      const durationSeconds = this.parseDurationToSeconds(entry.duration);
+      const endMinutes = startMinutes + Math.floor(durationSeconds / 60);
+      
+      let effectiveCurrent = currentMinutes;
+      let effectiveStart = startMinutes;
+      let effectiveEnd = endMinutes;
+      
+      if (effectiveEnd > 24 * 60) {
+        if (effectiveCurrent < effectiveStart) {
+          effectiveCurrent += 24 * 60;
+        }
+        effectiveEnd = effectiveEnd % (24 * 60);
+        if (effectiveStart > effectiveEnd) {
+          effectiveEnd += 24 * 60;
+        }
+      }
+      
+      if (effectiveCurrent >= effectiveStart && effectiveCurrent < effectiveEnd) {
+        return entry.duration;
+      }
+    }
+    return null;
+  }
+
+  parseTimeToMinutes(timeStr) {
+    const [h, m] = timeStr.split(':').map(Number);
+    return h * 60 + m;
+  }
+
+  parseDurationToSeconds(duration) {
+    let totalSeconds = 0;
+    const hourMatch = duration.match(/(\d+)h/);
+    const minMatch = duration.match(/(\d+)m/);
+    
+    if (hourMatch) totalSeconds += parseInt(hourMatch[1]) * 3600;
+    if (minMatch) totalSeconds += parseInt(minMatch[1]) * 60;
+    
+    if (!hourMatch && !minMatch) {
+      totalSeconds = parseInt(duration) * 3600;
+    }
+    
+    return totalSeconds;
+  }
+
+  formatTime(date) {
+    return `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
   }
 
   async loadConfig() {
@@ -88,7 +245,6 @@ class PoolApp {
       }
       
       this.renderPools(pools);
-      this.connectWebSocket();
     } catch (error) {
       console.error('Failed to load pools:', error);
       this.showErrorState('Failed to connect to server');
@@ -105,10 +261,12 @@ class PoolApp {
 
   connectWebSocket() {
     if (this.ws?.readyState === WebSocket.OPEN) {
+      console.log('WebSocket already open');
       return;
     }
 
     const url = this.apiKey ? `${this.getWsUrl()}?api_key=${this.apiKey}` : this.getWsUrl();
+    console.log('Connecting to WebSocket:', url);
     
     try {
       this.ws = new WebSocket(url);
@@ -192,7 +350,8 @@ class PoolApp {
     }
 
     const { pool_id, ...status } = data;
-    this.pools.set(pool_id, { ...this.pools.get(pool_id), ...status });
+    console.log('Received pool update:', pool_id, status);
+    this.poolStatuses.set(pool_id, { ...this.poolStatuses.get(pool_id), ...status });
     this.updatePoolCard(pool_id, status);
   }
 
@@ -201,6 +360,7 @@ class PoolApp {
     
     pools.forEach(pool => {
       this.pools.set(pool.id, pool);
+      this.poolStatuses.set(pool.id, {});
       const card = this.createPoolCard(pool);
       this.elements.poolsGrid.appendChild(card);
     });
@@ -340,7 +500,8 @@ class PoolApp {
     }
     
     if (status.remaining_minutes !== null && status.remaining_minutes !== undefined) {
-      statusRemaining.textContent = `${status.remaining_minutes} min remaining`;
+      const mins = status.remaining_minutes;
+      statusRemaining.textContent = `${mins}:00 remaining`;
       statusRemaining.style.display = 'block';
     } else {
       statusRemaining.style.display = 'none';
@@ -409,6 +570,7 @@ class PoolApp {
         const pools = await response.json();
         this.elements.poolsGrid.innerHTML = '';
         this.pools.clear();
+        this.poolStatuses.clear();
         this.renderPools(pools);
         this.showToast('Refreshed', 'success');
       }
@@ -468,5 +630,11 @@ class PoolApp {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  new PoolApp();
+  window.poolApp = new PoolApp();
+});
+
+window.addEventListener('beforeunload', () => {
+  if (window.poolApp) {
+    window.poolApp.stopUpdateInterval();
+  }
 });
