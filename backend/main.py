@@ -1,11 +1,14 @@
 import uvicorn
 
 from api import app
-from config import config
+from config import settings
 from db import init_pools, get_all_pools
 from pool_status import init_pool_statuses
 from scheduler import scheduler
 from api import manager
+from logging_config import configure_logging, get_logger
+
+logger = get_logger(__name__)
 
 
 async def start_scheduler():
@@ -21,6 +24,8 @@ async def start_scheduler():
 
 @app.on_event("startup")
 async def startup():
+    configure_logging(debug=settings.debug)
+    logger.info("Starting application", port=settings.api_port)
     init_pools()
     init_pool_statuses(get_all_pools())
     await start_scheduler()
@@ -28,8 +33,9 @@ async def startup():
 
 @app.on_event("shutdown")
 async def shutdown():
+    logger.info("Shutting down application")
     await scheduler.stop()
 
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=config.api_port)
+    uvicorn.run(app, host="0.0.0.0", port=settings.api_port)

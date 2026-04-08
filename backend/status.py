@@ -1,25 +1,12 @@
-import re
-from datetime import datetime, timedelta
-from typing import Optional, Tuple
+from __future__ import annotations
 
-def parse_time(time_str: str) -> Tuple[int, int]:
-    parts = time_str.split(":")
-    return int(parts[0]), int(parts[1])
+from datetime import datetime
 
-def parse_duration(duration_str: str) -> int:
-    total_minutes = 0
-    hours = re.search(r'(\d+)h', duration_str)
-    minutes = re.search(r'(\d+)m', duration_str)
-    if hours:
-        total_minutes += int(hours.group(1)) * 60
-    if minutes:
-        total_minutes += int(minutes.group(1))
-    return total_minutes
+from utils import parse_time, parse_duration
 
 def get_pool_status(schedule: list) -> dict:
     now = datetime.now()
     current_minutes = now.hour * 60 + now.minute
-    today = now.weekday()
     
     if not schedule:
         return {"filtering": False, "next_filter": None, "last_filtered": None}
@@ -27,7 +14,6 @@ def get_pool_status(schedule: list) -> dict:
     sorted_schedule = sorted(schedule, key=lambda x: parse_time(x["startAt"])[0] * 60 + parse_time(x["startAt"])[1])
     
     last_filter = None
-    is_filtering = False
     
     for entry in sorted_schedule:
         start_h, start_m = parse_time(entry["startAt"])
@@ -36,14 +22,13 @@ def get_pool_status(schedule: list) -> dict:
         end_minutes = start_minutes + duration_minutes
         
         if start_minutes <= current_minutes < end_minutes:
-            is_filtering = True
             remaining = end_minutes - current_minutes
             return {
                 "filtering": True,
                 "ends_at": f"{(start_h + (start_m + duration_minutes) // 60) % 24}:{(start_m + duration_minutes) % 60:02d}",
                 "remaining_minutes": remaining,
                 "next_filter": None,
-                "last_filtered": None
+                "last_filtered": None,
             }
         
         if current_minutes >= end_minutes:

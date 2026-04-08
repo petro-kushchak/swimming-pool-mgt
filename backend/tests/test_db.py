@@ -22,17 +22,17 @@ class TestDatabaseFunctions:
             "api_key": "my-secret-key",
             "pools": [
                 {"id": 1, "name": "Pool A", "location": "A", "capacity": 10},
-                {"id": 2, "name": "Pool B", "location": "B", "capacity": 20}
-            ]
+                {"id": 2, "name": "Pool B", "location": "B", "capacity": 20},
+            ],
         }
         
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
             json.dump(config_data, f)
             f.flush()
             temp_path = f.name
         
         try:
-            with mock.patch('config.config.pools_config', temp_path):
+            with mock.patch("db.settings.pools_config", temp_path):
                 init_pools()
                 pools = get_all_pools()
                 
@@ -43,13 +43,13 @@ class TestDatabaseFunctions:
             os.unlink(temp_path)
 
     def test_init_pools_empty_config(self):
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
             json.dump({"pools": []}, f)
             f.flush()
             temp_path = f.name
         
         try:
-            with mock.patch('config.config.pools_config', temp_path):
+            with mock.patch("db.settings.pools_config", temp_path):
                 init_pools()
                 pools = get_all_pools()
                 
@@ -58,17 +58,17 @@ class TestDatabaseFunctions:
             os.unlink(temp_path)
 
     def test_init_pools_invalid_config(self):
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
             json.dump({
                 "pools": [
-                    {"id": 1, "name": "Invalid Pool"}  # missing location
-                ]
+                    {"id": 1, "name": "Invalid Pool"}
+                ],
             }, f)
             f.flush()
             temp_path = f.name
         
         try:
-            with mock.patch('config.config.pools_config', temp_path):
+            with mock.patch("db.settings.pools_config", temp_path):
                 with pytest.raises(Exception):
                     init_pools()
         finally:
@@ -79,17 +79,17 @@ class TestDatabaseFunctions:
             "api_key": "",
             "pools": [
                 {"id": 1, "name": "Pool 1", "location": "A", "capacity": 10},
-                {"id": 2, "name": "Pool 2", "location": "B", "capacity": 20}
-            ]
+                {"id": 2, "name": "Pool 2", "location": "B", "capacity": 20},
+            ],
         }
         
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
             json.dump(config_data, f)
             f.flush()
             temp_path = f.name
         
         try:
-            with mock.patch('config.config.pools_config', temp_path):
+            with mock.patch("db.settings.pools_config", temp_path):
                 init_pools()
                 
                 pool = get_pool_by_id(1)
@@ -106,17 +106,17 @@ class TestDatabaseFunctions:
         config_data = {
             "api_key": "",
             "pools": [
-                {"id": 1, "name": "Pool 1", "location": "A", "capacity": 10}
-            ]
+                {"id": 1, "name": "Pool 1", "location": "A", "capacity": 10},
+            ],
         }
         
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
             json.dump(config_data, f)
             f.flush()
             temp_path = f.name
         
         try:
-            with mock.patch('config.config.pools_config', temp_path):
+            with mock.patch("db.settings.pools_config", temp_path):
                 init_pools()
                 
                 pool = get_pool_by_id(999)
@@ -135,19 +135,19 @@ class TestDatabaseFunctions:
                     "capacity": 10,
                     "schedule": [
                         {"startAt": "06:00", "duration": "3h"},
-                        {"startAt": "14:00", "duration": "2h 30m"}
-                    ]
-                }
-            ]
+                        {"startAt": "14:00", "duration": "2h 30m"},
+                    ],
+                },
+            ],
         }
         
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
             json.dump(config_data, f)
             f.flush()
             temp_path = f.name
         
         try:
-            with mock.patch('config.config.pools_config', temp_path):
+            with mock.patch("db.settings.pools_config", temp_path):
                 init_pools()
                 
                 pool = get_pool_by_id(1)
@@ -171,19 +171,19 @@ class TestDatabaseFunctions:
                         "name": "Filter Pump",
                         "start_url": "http://localhost/start",
                         "stop_url": "http://localhost/stop",
-                        "status_url": "http://localhost/status"
-                    }
-                }
-            ]
+                        "status_url": "http://localhost/status",
+                    },
+                },
+            ],
         }
         
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
             json.dump(config_data, f)
             f.flush()
             temp_path = f.name
         
         try:
-            with mock.patch('config.config.pools_config', temp_path):
+            with mock.patch("db.settings.pools_config", temp_path):
                 init_pools()
                 
                 pool = get_pool_by_id(1)

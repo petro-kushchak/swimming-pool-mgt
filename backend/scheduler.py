@@ -1,31 +1,17 @@
+from __future__ import annotations
+
 import asyncio
-import re
 from datetime import datetime
 from typing import Optional
 
-from config import config
-from pool_status import get_pool_status_by_id, get_all_pool_statuses, PoolStatus
-
-
-def parse_time(time_str: str) -> tuple[int, int]:
-    parts = time_str.split(":")
-    return int(parts[0]), int(parts[1])
-
-
-def parse_duration(duration_str: str) -> int:
-    total_minutes = 0
-    hours_match = re.search(r'(\d+)h', duration_str)
-    minutes_match = re.search(r'(\d+)m', duration_str)
-    if hours_match:
-        total_minutes += int(hours_match.group(1)) * 60
-    if minutes_match:
-        total_minutes += int(minutes_match.group(1))
-    return total_minutes if total_minutes > 0 else 60
+from config import settings
+from pool_status import get_all_pool_statuses
+from utils import parse_time, parse_duration
 
 
 class Scheduler:
-    def __init__(self, interval: int = None):
-        self.interval = interval or config.scheduler_interval
+    def __init__(self, interval: Optional[int] = None) -> None:
+        self.interval = interval or settings.scheduler_interval
         self._running = False
         self._task: Optional[asyncio.Task] = None
 

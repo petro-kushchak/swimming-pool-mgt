@@ -2,7 +2,8 @@ import pytest
 import sys
 sys.path.insert(0, '/Users/pkushchak/Projects/home/swimming-pool-mgt/backend')
 
-from status import get_pool_status, parse_time, parse_duration
+from status import get_pool_status
+from utils import parse_time, parse_duration
 
 
 class TestParseTime:
@@ -32,9 +33,9 @@ class TestParseDuration:
         assert parse_duration("1h 15m") == 75
         assert parse_duration("3h 45m") == 225
 
-    def test_parse_duration_invalid_returns_zero(self):
-        assert parse_duration("invalid") == 0
-        assert parse_duration("") == 0
+    def test_parse_duration_invalid_returns_default(self):
+        assert parse_duration("invalid") == 60
+        assert parse_duration("") == 60
 
 
 class TestGetPoolStatus:

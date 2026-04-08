@@ -1,32 +1,34 @@
-import os
-import json
-from typing import Optional, List
+from __future__ import annotations
 
-from config import config
+import json
+import os
+from typing import Optional
+
+from config import settings
 from schema import PoolsConfigSchema
 
 
 class Database:
-    _instance: Optional['Database'] = None
+    _instance: Optional[Database] = None
 
-    def __init__(self):
-        self._pools: List[dict] = []
+    def __init__(self) -> None:
+        self._pools: list[dict] = []
         self._api_key: str = ""
         self._next_id: int = 1
 
     @classmethod
-    def get_instance(cls) -> 'Database':
+    def get_instance(cls) -> Database:
         if cls._instance is None:
             cls._instance = cls()
         return cls._instance
 
     @classmethod
-    def reset(cls):
+    def reset(cls) -> None:
         cls._instance = None
 
-    def load(self):
-        if os.path.exists(config.pools_config):
-            with open(config.pools_config, "r") as f:
+    def load(self) -> None:
+        if os.path.exists(settings.pools_config):
+            with open(settings.pools_config, "r") as f:
                 data = json.load(f)
                 validated = PoolsConfigSchema(**data)
                 self._pools = [pool.model_dump() for pool in validated.pools]
@@ -39,7 +41,7 @@ class Database:
         return self._api_key
 
     @property
-    def pools(self) -> List[dict]:
+    def pools(self) -> list[dict]:
         return self._pools
 
     def get_pool_by_id(self, pool_id: int) -> Optional[dict]:
@@ -48,14 +50,21 @@ class Database:
                 return pool
         return None
 
-    def add_pool(self, name: str, description: Optional[str], location: str, capacity: int, schedule: Optional[list]) -> dict:
+    def add_pool(
+        self,
+        name: str,
+        description: Optional[str],
+        location: str,
+        capacity: int,
+        schedule: Optional[list],
+    ) -> dict:
         pool = {
             "id": self._next_id,
             "name": name,
             "description": description,
             "location": location,
             "capacity": capacity,
-            "schedule": schedule
+            "schedule": schedule,
         }
         self._pools.append(pool)
         self._next_id += 1
@@ -65,7 +74,7 @@ class Database:
 _db = Database.get_instance()
 
 
-def init_pools():
+def init_pools() -> None:
     _db.load()
 
 
@@ -73,7 +82,7 @@ def get_api_key() -> str:
     return _db.api_key
 
 
-def get_all_pools() -> List[dict]:
+def get_all_pools() -> list[dict]:
     return _db.pools
 
 

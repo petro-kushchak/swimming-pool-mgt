@@ -6,7 +6,8 @@ from datetime import datetime
 import sys
 sys.path.insert(0, '/Users/pkushchak/Projects/home/swimming-pool-mgt/backend')
 
-from scheduler import Scheduler, parse_time, parse_duration
+from scheduler import Scheduler
+from utils import parse_time, parse_duration
 
 
 class TestSchedulerHelpers:

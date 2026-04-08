@@ -1,12 +1,14 @@
+from __future__ import annotations
+
 import os
 
-from config import config
+from config import settings
 
 
 def get_version() -> str:
-    if config.build_version and config.build_version != "unknown":
-        return config.build_version
-    if os.path.exists(config.version_file):
-        with open(config.version_file, "r") as f:
+    if settings.build_version and settings.build_version != "unknown":
+        return settings.build_version
+    if os.path.exists(settings.version_file):
+        with open(settings.version_file, "r") as f:
             return f.read().strip()
     return "unknown"

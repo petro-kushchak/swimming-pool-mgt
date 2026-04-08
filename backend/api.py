@@ -3,7 +3,7 @@ from pydantic import BaseModel, Field
 from typing import Optional, List
 
 from db import get_all_pools, get_pool_by_id, get_api_key
-from pool_status import get_pool_status_by_id, get_all_pool_statuses, PoolStatus
+from pool_status import get_pool_status_by_id, get_all_pool_statuses
 from version import get_version
 
 api_router = APIRouter(prefix="/api/v1")
@@ -20,12 +20,15 @@ class ConnectionManager:
     def disconnect(self, websocket: WebSocket):
         self.active_connections.pop(websocket, None)
 
-    async def broadcast(self, message: dict):
+    async def broadcast(self, message: dict) -> None:
+        disconnected: list[WebSocket] = []
         for connection in list(self.active_connections.keys()):
             try:
                 await connection.send_json(message)
-            except:
-                self.active_connections.pop(connection, None)
+            except Exception:
+                disconnected.append(connection)
+        for connection in disconnected:
+            self.active_connections.pop(connection, None)
 
 
 manager = ConnectionManager()
