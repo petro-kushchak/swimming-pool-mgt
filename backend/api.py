@@ -1,4 +1,5 @@
 from fastapi import FastAPI, APIRouter, WebSocket, WebSocketDisconnect, HTTPException, Request
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 from typing import Optional, List
 
@@ -303,15 +304,16 @@ def create_app() -> FastAPI:
         redoc_url="/redoc",
         openapi_url="/openapi.json"
     )
-    app.include_router(api_router)
     
-    # @app.get("/", response_model=ServiceInfo)
-    # def read_root():
-    #     return ServiceInfo(
-    #         service="Swimming Pool Management Service",
-    #         version=version,
-    #         docs="/docs"
-    #     )
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=["*"],
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
+    
+    app.include_router(api_router)
     
     return app
 

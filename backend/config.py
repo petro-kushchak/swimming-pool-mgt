@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 from pydantic import Field
 
 
@@ -11,12 +11,19 @@ class Settings(BaseSettings):
     build_version: str = Field(default="unknown", description="Build version string")
     version_file: str = Field(default="/app/VERSION", description="Path to version file")
     debug: bool = Field(default=False, description="Enable debug mode")
+    api_key: str = Field(default="", description="API key for authentication")
 
-    class Config:
-        env_prefix = ""
-        env_file = ".env"
-        env_file_encoding = "utf-8"
-        case_sensitive = False
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+        extra="ignore"
+    )
 
 
 settings = Settings()
+
+
+def require_api_key() -> str:
+    if not settings.api_key:
+        raise RuntimeError("API_KEY environment variable is required but not set")
+    return settings.api_key

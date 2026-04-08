@@ -1,0 +1,727 @@
+/* Material Design 3 Theme - Pool Blue */
+
+:root {
+  /* Primary - Deep Pool Blue */
+  --md-primary: #0077B6;
+  --md-primary-container: #C8E6FA;
+  --md-on-primary: #FFFFFF;
+  --md-on-primary-container: #001E2F;
+
+  /* Secondary - Water Teal */
+  --md-secondary: #048A81;
+  --md-secondary-container: #A7F3EC;
+  --md-on-secondary: #FFFFFF;
+  --md-on-secondary-container: #00201D;
+
+  /* Tertiary - Sunny Orange */
+  --md-tertiary: #E85D04;
+  --md-tertiary-container: #FFD8BA;
+  --md-on-tertiary: #FFFFFF;
+
+  /* Error */
+  --md-error: #BA1A1A;
+  --md-error-container: #FFDAD6;
+  --md-on-error: #FFFFFF;
+
+  /* Surface & Background */
+  --md-surface: #FAFCFF;
+  --md-surface-variant: #DCE4EB;
+  --md-surface-container: #FFFFFF;
+  --md-surface-container-low: #F5F8FA;
+  --md-surface-container-high: #EEF2F6;
+  --md-surface-container-highest: #E8EEF2;
+
+  /* Text */
+  --md-on-surface: #191C1E;
+  --md-on-surface-variant: #40484D;
+  --md-outline: #70787E;
+  --md-outline-variant: #B0C4CD;
+
+  /* Status Colors */
+  --md-status-filtering: #2E7D32;
+  --md-status-filtering-container: #C8E6CB;
+  --md-status-stopped: #D32F2F;
+  --md-status-stopped-container: #FFCDD2;
+  --md-status-scheduled: #1976D2;
+  --md-status-scheduled-container: #BBDEFB;
+  --md-status-manual: #F57C00;
+  --md-status-manual-container: #FFE0B2;
+
+  /* Shadows & Elevation */
+  --md-elevation-1: 0 1px 2px rgba(0, 0, 0, 0.12), 0 1px 3px rgba(0, 0, 0, 0.08);
+  --md-elevation-2: 0 2px 4px rgba(0, 0, 0, 0.12), 0 3px 6px rgba(0, 0, 0, 0.08);
+  --md-elevation-3: 0 4px 8px rgba(0, 0, 0, 0.12), 0 6px 12px rgba(0, 0, 0, 0.08);
+
+  /* Motion */
+  --md-transition: 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  --md-transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --md-transition-slow: 400ms cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Shape */
+  --md-shape-small: 8px;
+  --md-shape-medium: 12px;
+  --md-shape-large: 16px;
+  --md-shape-extra-large: 24px;
+
+  /* Spacing */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+}
+
+/* Reset & Base */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: 'Roboto', -apple-system, BlinkMacSystemFont, sans-serif;
+  background-color: var(--md-surface);
+  color: var(--md-on-surface);
+  line-height: 1.5;
+  min-height: 100vh;
+}
+
+/* App Bar */
+.app-bar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background-color: var(--md-primary-container);
+  color: var(--md-on-primary-container);
+  box-shadow: var(--md-elevation-2);
+}
+
+.app-bar-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: var(--spacing-md) var(--spacing-lg);
+}
+
+.app-bar-title {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.app-bar-icon {
+  font-size: 28px;
+}
+
+.app-bar-title h1 {
+  font-size: 22px;
+  font-weight: 500;
+  letter-spacing: 0;
+}
+
+/* Connection Status */
+.connection-status {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-xs) var(--spacing-md);
+  border-radius: var(--md-shape-large);
+  background-color: var(--md-surface-container);
+  font-size: 14px;
+  transition: background-color var(--md-transition);
+}
+
+.connection-status.connected {
+  background-color: var(--md-status-filtering-container);
+  color: var(--md-status-filtering);
+}
+
+.connection-status.disconnected {
+  background-color: var(--md-status-stopped-container);
+  color: var(--md-status-stopped);
+}
+
+.connection-status .status-icon {
+  font-size: 20px;
+}
+
+.connection-status .status-text {
+  font-weight: 500;
+}
+
+/* Main Content */
+.main-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: var(--spacing-lg);
+}
+
+/* Loading State */
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-xl) * 2;
+  color: var(--md-on-surface-variant);
+}
+
+.loading-spinner {
+  width: 48px;
+  height: 48px;
+  border: 4px solid var(--md-surface-variant);
+  border-top-color: var(--md-primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Pools Grid */
+.pools-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+  gap: var(--spacing-lg);
+}
+
+/* Pool Card */
+.pool-card {
+  background-color: var(--md-surface-container);
+  border-radius: var(--md-shape-extra-large);
+  box-shadow: var(--md-elevation-1);
+  overflow: hidden;
+  transition: box-shadow var(--md-transition), transform var(--md-transition);
+}
+
+.pool-card:hover {
+  box-shadow: var(--md-elevation-2);
+  transform: translateY(-2px);
+}
+
+.pool-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: var(--spacing-lg);
+  background-color: var(--md-surface-container-high);
+  border-bottom: 1px solid var(--md-outline-variant);
+}
+
+.pool-info {
+  flex: 1;
+}
+
+.pool-name {
+  font-size: 20px;
+  font-weight: 500;
+  color: var(--md-on-surface);
+  margin-bottom: var(--spacing-xs);
+}
+
+.pool-location {
+  font-size: 14px;
+  color: var(--md-on-surface-variant);
+}
+
+/* Status Chip */
+.pool-status-chip {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-xs) var(--spacing-md);
+  border-radius: var(--md-shape-large);
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.pool-status-chip.filtering {
+  background-color: var(--md-status-filtering-container);
+  color: var(--md-status-filtering);
+}
+
+.pool-status-chip.stopped {
+  background-color: var(--md-status-stopped-container);
+  color: var(--md-status-stopped);
+}
+
+.pool-status-chip.scheduled {
+  background-color: var(--md-status-scheduled-container);
+  color: var(--md-status-scheduled);
+}
+
+.pool-status-chip.manual {
+  background-color: var(--md-status-manual-container);
+  color: var(--md-status-manual);
+}
+
+.pool-status-chip .chip-icon {
+  font-size: 16px;
+}
+
+/* Card Body */
+.pool-card-body {
+  padding: var(--spacing-lg);
+}
+
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--md-on-surface-variant);
+  margin-bottom: var(--spacing-md);
+}
+
+.section-title .material-symbols-rounded {
+  font-size: 18px;
+}
+
+/* Status Section */
+.status-section {
+  margin-bottom: var(--spacing-lg);
+}
+
+.status-indicator {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-lg);
+}
+
+.status-ring {
+  position: relative;
+  width: 72px;
+  height: 72px;
+  flex-shrink: 0;
+}
+
+.status-ring svg {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.status-ring .ring-bg {
+  fill: none;
+  stroke: var(--md-surface-variant);
+  stroke-width: 3;
+}
+
+.status-ring .ring-progress {
+  fill: none;
+  stroke: var(--md-status-filtering);
+  stroke-width: 3;
+  stroke-dasharray: 100, 100;
+  stroke-dashoffset: 100;
+  stroke-linecap: round;
+  transition: stroke-dashoffset var(--md-transition-slow);
+}
+
+.status-ring.filtering .ring-progress {
+  stroke: var(--md-status-filtering);
+}
+
+.status-ring.stopped .ring-progress {
+  stroke: var(--md-status-stopped);
+}
+
+.status-ring.scheduled .ring-progress {
+  stroke: var(--md-status-scheduled);
+}
+
+.ring-icon {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.ring-icon .material-symbols-rounded {
+  font-size: 28px;
+  color: var(--md-on-surface);
+}
+
+.status-details {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.status-label {
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--md-on-surface);
+}
+
+.status-time {
+  font-size: 14px;
+  color: var(--md-on-surface-variant);
+}
+
+.status-remaining {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--md-primary);
+}
+
+/* Schedule Section */
+.schedule-section {
+  margin-bottom: var(--spacing-lg);
+  padding-top: var(--spacing-md);
+  border-top: 1px solid var(--md-outline-variant);
+}
+
+.schedule-list {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-sm);
+}
+
+.schedule-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-xs) var(--spacing-md);
+  background-color: var(--md-surface-container-low);
+  border-radius: var(--md-shape-small);
+  font-size: 13px;
+}
+
+.schedule-item.active {
+  background-color: var(--md-primary-container);
+  color: var(--md-on-primary-container);
+}
+
+.schedule-item .time {
+  font-weight: 500;
+}
+
+.schedule-item .duration {
+  color: var(--md-on-surface-variant);
+  font-size: 12px;
+}
+
+/* Device Section */
+.device-section {
+  padding-top: var(--spacing-md);
+  border-top: 1px solid var(--md-outline-variant);
+}
+
+.device-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-sm) var(--spacing-md);
+  background-color: var(--md-surface-container-low);
+  border-radius: var(--md-shape-small);
+}
+
+.device-name {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.device-status {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  font-size: 12px;
+}
+
+.device-status::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: var(--md-outline);
+}
+
+.device-status.online::before {
+  background-color: var(--md-status-filtering);
+}
+
+.device-status.offline::before {
+  background-color: var(--md-status-stopped);
+}
+
+/* Card Footer */
+.pool-card-footer {
+  display: flex;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-md) var(--spacing-lg);
+  background-color: var(--md-surface-container-high);
+  border-top: 1px solid var(--md-outline-variant);
+}
+
+/* Action Buttons */
+.action-button {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-sm) var(--spacing-md);
+  border: none;
+  border-radius: var(--md-shape-medium);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color var(--md-transition), transform var(--md-transition-fast);
+}
+
+.action-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.action-button .material-symbols-rounded {
+  font-size: 18px;
+}
+
+.action-start {
+  background-color: var(--md-status-filtering-container);
+  color: var(--md-status-filtering);
+}
+
+.action-start:hover:not(:disabled) {
+  background-color: var(--md-status-filtering);
+  color: var(--md-on-error);
+}
+
+.action-stop {
+  background-color: var(--md-status-stopped-container);
+  color: var(--md-status-stopped);
+}
+
+.action-stop:hover:not(:disabled) {
+  background-color: var(--md-status-stopped);
+  color: var(--md-on-error);
+}
+
+.action-resume {
+  background-color: var(--md-surface-container-highest);
+  color: var(--md-on-surface);
+}
+
+.action-resume:hover:not(:disabled) {
+  background-color: var(--md-surface-variant);
+}
+
+/* FAB */
+.fab {
+  position: fixed;
+  bottom: var(--spacing-lg);
+  right: var(--spacing-lg);
+}
+
+.fab-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border: none;
+  border-radius: 16px;
+  background-color: var(--md-secondary-container);
+  color: var(--md-on-secondary-container);
+  box-shadow: var(--md-elevation-3);
+  cursor: pointer;
+  transition: background-color var(--md-transition), transform var(--md-transition-fast);
+}
+
+.fab-button:hover {
+  background-color: var(--md-secondary);
+  color: var(--md-on-secondary);
+  transform: scale(1.05);
+}
+
+.fab-button:active {
+  transform: scale(0.95);
+}
+
+.fab-button .material-symbols-rounded {
+  font-size: 24px;
+}
+
+.fab-button.refreshing .material-symbols-rounded {
+  animation: spin 1s linear infinite;
+}
+
+/* Toast Container */
+.toast-container {
+  position: fixed;
+  bottom: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  z-index: 1000;
+}
+
+.toast {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  padding: var(--spacing-md) var(--spacing-lg);
+  background-color: var(--md-on-surface);
+  color: var(--md-surface);
+  border-radius: var(--md-shape-medium);
+  box-shadow: var(--md-elevation-3);
+  animation: slideUp 300ms ease-out;
+}
+
+.toast.success {
+  background-color: var(--md-status-filtering);
+}
+
+.toast.error {
+  background-color: var(--md-error);
+}
+
+.toast .material-symbols-rounded {
+  font-size: 20px;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+}
+
+.toast.hiding {
+  animation: slideDown 300ms ease-out forwards;
+}
+
+/* Dialog */
+.confirm-dialog {
+  border: none;
+  border-radius: var(--md-shape-extra-large);
+  padding: var(--spacing-lg);
+  box-shadow: var(--md-elevation-3);
+  max-width: 400px;
+  width: 90%;
+}
+
+.confirm-dialog::backdrop {
+  background-color: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(4px);
+}
+
+.dialog-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+}
+
+.dialog-title {
+  font-size: 24px;
+  font-weight: 500;
+}
+
+.dialog-message {
+  color: var(--md-on-surface-variant);
+  line-height: 1.6;
+}
+
+.dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--spacing-sm);
+}
+
+.dialog-button {
+  padding: var(--spacing-sm) var(--spacing-lg);
+  border: none;
+  border-radius: var(--md-shape-medium);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color var(--md-transition);
+}
+
+.dialog-cancel {
+  background-color: transparent;
+  color: var(--md-primary);
+}
+
+.dialog-cancel:hover {
+  background-color: var(--md-surface-container-high);
+}
+
+.dialog-confirm {
+  background-color: var(--md-primary);
+  color: var(--md-on-primary);
+}
+
+.dialog-confirm:hover {
+  background-color: var(--md-primary);
+  filter: brightness(0.9);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .app-bar-content {
+    padding: var(--spacing-md);
+  }
+  
+  .app-bar-title h1 {
+    font-size: 18px;
+  }
+  
+  .main-content {
+    padding: var(--spacing-md);
+  }
+  
+  .pools-grid {
+    grid-template-columns: 1fr;
+    gap: var(--spacing-md);
+  }
+  
+  .pool-card-header {
+    padding: var(--spacing-md);
+  }
+  
+  .pool-card-body {
+    padding: var(--spacing-md);
+  }
+  
+  .pool-card-footer {
+    padding: var(--spacing-md);
+  }
+  
+  .connection-status .status-text {
+    display: none;
+  }
+}

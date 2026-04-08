@@ -4,7 +4,7 @@ import json
 import os
 from typing import Optional
 
-from config import settings
+from config import settings, require_api_key
 from schema import PoolsConfigSchema
 
 
@@ -32,13 +32,12 @@ class Database:
                 data = json.load(f)
                 validated = PoolsConfigSchema(**data)
                 self._pools = [pool.model_dump() for pool in validated.pools]
-                self._api_key = validated.api_key or ""
         if self._pools:
             self._next_id = max(p["id"] for p in self._pools) + 1
 
     @property
     def api_key(self) -> str:
-        return self._api_key
+        return settings.api_key
 
     @property
     def pools(self) -> list[dict]:
@@ -75,6 +74,7 @@ _db = Database.get_instance()
 
 
 def init_pools() -> None:
+    require_api_key()
     _db.load()
 
 

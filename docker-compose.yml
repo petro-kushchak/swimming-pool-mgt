@@ -1,12 +1,12 @@
 services:
-  pool-mgt:
+  pool-mgt-api:
     build:
       context: .
       dockerfile: docker/Dockerfile
       args:
         - BUILD_VERSION=${BUILD_VERSION:-unknown}
-    image: ${IMAGE_NAME:-swimming-pool-mgt}:${BUILD_VERSION:-unknown}
-    container_name: ${CONTAINER_NAME:-pool-mgt}
+    image: ${IMAGE_NAME:-pool-mgt}:${BUILD_VERSION:-unknown}
+    container_name: ${CONTAINER_NAME:-pool-mgt-api}
     ports:
       - "${API_PORT:-8082}:8000"
     volumes:
@@ -14,4 +14,44 @@ services:
     environment:
       - BUILD_VERSION=${BUILD_VERSION:-unknown}
       - SCHEDULER_INTERVAL=${SCHEDULER_INTERVAL:-60}
+      - API_KEY=${API_KEY:-}
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/v1/version')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    networks:
+      - pool-network
+
+  pool-mgt-ui:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.frontend
+      args:
+        - BUILD_VERSION=${BUILD_VERSION:-unknown}
+    image: ${IMAGE_NAME:-pool-mgt}-ui:${BUILD_VERSION:-unknown}
+    container_name: ${CONTAINER_NAME:-pool-mgt-ui}
+    ports:
+      - "${UI_PORT:-8080}:80"
+    environment:
+      - API_URL=${UI_API_URL:-http://localhost:8082}
+      - WS_URL=${UI_WS_URL:-ws://localhost:8082}
+      - API_KEY=${API_KEY:-}
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+    networks:
+      - pool-network
+    depends_on:
+      pool-mgt-api:
+        condition: service_healthy
+
+networks:
+  pool-network:
+    driver: bridge

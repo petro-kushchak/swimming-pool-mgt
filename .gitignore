@@ -31,3 +31,6 @@ venv.bak/
 .DS_Store
 .vscode/
 .idea/
+
+# API key (generated at runtime)
+.api_key
